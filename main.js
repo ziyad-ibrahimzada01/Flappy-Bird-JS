@@ -15,8 +15,8 @@ images.bg.src = "images/bg.png"
 images.bird.src = "images/bird.png"
 images.column.src = "images/column.png"
 images.bird.onload = () => {
-  bird.width = images.bird.naturalWidth / 10
-  bird.height = images.bird.naturalHeight / 10
+  bird.width = images.bird.naturalWidth / 15
+  bird.height = images.bird.naturalHeight / 15
 }
 
 
@@ -68,19 +68,22 @@ function gameLoop(now = performance.now()){
 function update(dt){
     bird.vy+= bird.ay*dt
     bird.y += bird.vy*dt
-   if(bird.y<0){
-    isEnd = true
-   }
-   if (bird.y + bird.height > canvas.height) {
-  isEnd = true
-  bird.y = canvas.height - bird.height
-}
+   if (bird.y < 0 || bird.y + bird.height > canvas.height) {
+    if (!isEnd) {
+      isEnd = true
+      setTimeout(restartGame, 3000)
+    }
+  }
 
     for(const column of columns){
         column.x += COLUMN_VELOCITY*dt
         if (isCollision(bird, column)) {
-      isEnd = true;
-    }
+  if (!isEnd) { 
+    isEnd = true
+    setTimeout(restartGame, 3000)
+  }
+}
+
     }
     const lastColumn = columns.at(-1)
     if(canvas.width - lastColumn.x>COLUMN_DISTANCE){
@@ -102,9 +105,9 @@ function render(){
     ctx.drawImage (images.column, column.x, column.y, column.width, column.height)
     }
     if (isEnd) {
-    ctx.font = "50px Courier"
+    ctx.font = "40px Courier"
     ctx.fillStyle = "red"
-    ctx.fillText("Game over", 10, 100)
+    ctx.fillText("Game over! Restarts in 3 seconds", 10, 100)
   }
 }
 document.addEventListener("keydown", function (e){
@@ -119,3 +122,12 @@ addColumnPair()
 
 gameLoop()
 
+function restartGame() {
+  isEnd = false
+  bird.y = canvas.height / 2 - 20
+  bird.vy = 0
+  columns.length = 0
+  addColumnPair()
+prevTime = performance.now()
+  window.requestAnimationFrame(gameLoop)
+}
